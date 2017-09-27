@@ -1,0 +1,90 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration 
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+newmtl BLACK_BLACK
+	 Ka 0 0 0
+	 Kd 0.0980392 0.0980392 0.0980392
+	 Ks 1 1 1
+	 illum 2
+	 Ns 78.7932
+newmtl BLACK_MATTE
+	 Ka 0 0 0
+	 Kd 0.14902 0.156863 0.156863
+	 Ks 1 1 1
+	 illum 2
+	 Ns 78.7932
+newmtl BLACK_PLASTIC
+	 Ka 0 0 0
+	 Kd 0.156863 0.156863 0.156863
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl BLUE
+	 Ka 0 0 0
+	 Kd 0.407843 0.611765 0.980392
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl CAR_GLASS
+	 Ka 0 0 0
+	 Kd 0.294118 0.309804 0.309804
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl CHROME
+	 Ka 0 0 0
+	 Kd 0.721569 0.760784 0.8
+	 Ks 0.603922 0.635294 0.666667
+	 illum 2
+	 Ns 2048
+newmtl GRAY_MATTE
+	 Ka 0 0 0
+	 Kd 0.301961 0.301961 0.301961
+	 Ks 1 1 1
+	 illum 2
+	 Ns 39.3966
+newmtl LIGHT_GLASS
+	 Ka 0 0 0
+	 Kd 1 1 1
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl LIGHT_ORANGE
+	 Ka 0 0 0
+	 Kd 1 0.607843 0
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl LIGHT_RED
+	 Ka 0 0 0
+	 Kd 1 0 0
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl LIGHT_WHITE
+	 Ka 0 0 0
+	 Kd 0.945098 0.945098 0.945098
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl WHEEL_ALUMINIUM
+	 Ka 0 0 0
+	 Kd 0.733333 0.772549 0.811765
+	 Ks 0.603922 0.635294 0.666667
+	 illum 2
+	 Ns 119.428
+newmtl WHITE_BODY
+	 Ka 0 0 0
+	 Kd 0.74902 0.74902 0.74902
+	 Ks 1 1 1
+	 illum 2
+	 Ns 2048
+newmtl WHITE_1
+	 Ka 0 0 0
+	 Kd 1 1 1
+	 Ks 1 1 1
+	 illum 2
+	 Ns 78.7932
