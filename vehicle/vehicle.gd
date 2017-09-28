@@ -1,16 +1,13 @@
 extends VehicleBody
 
-
 # Constants
 const WEIGHT = 1450
-# const ACCELERATION = 4
-const FRICTION = 0.25
-const ENGINE_FORCE = 7000
-const REVERSE_ENGINE_FORCE = 6000
+const FRICTION = 0.5
+const ENGINE_FORCE = 6000
+const REVERSE_ENGINE_FORCE = 4000
 
 const STEER_SPEED = 1
-const STEER_LIMIT = 1
-const SPEED_STEER_FACTOR = 3 # the less, the harder to turn on high speeds
+const STEER_LIMIT = 0.8
 const MAX_SPEED = 240 # kph
 
 # Car
@@ -66,24 +63,27 @@ func _fixed_process(delta):
 	speed_kph = speed * 3.6
 	speed_mph = speed * 2.237
 	
-	var given_text = null
+	var steer_speed_multiplier = 1
+
 
 	# Update speedometer
 	get_node("Speedometer").speed = speed_kph
 
-	# Vary steering limit and steering speed based on current speed
-	# STEER_LIMIT = 1 - (speed_kph / MAX_SPEED / SPEED_STEER_FACTOR)
-	# STEER_SPEED = 1 - (speed_kph / MAX_SPEED / SPEED_STEER_FACTOR)
-		
 	# Steer
 	if (Input.is_action_pressed("ui_left")):
 		steer_target = -STEER_LIMIT
+		if (get_steering() > 0.2):
+			print("left but right")
+			steer_speed_multiplier += 4
 	elif (Input.is_action_pressed("ui_right")):
 		steer_target = STEER_LIMIT
+		if (get_steering() < -0.2):
+			print("right but left")
+			steer_speed_multiplier += 4
 	else:
 		steer_target = 0
 		# faster turning when resetting to straight
-		# STEER_SPEED *= 1.2
+		steer_speed_multiplier += 2
 
 	# Accelerate
 	if (Input.is_action_pressed("ui_up")):
@@ -94,7 +94,7 @@ func _fixed_process(delta):
 	else:
 		set_engine_force(0)
 		# faster turning without accelerating
-		# STEER_SPEED *= 1.2
+		# steer_speed_multiplier += 1.2
 
 	# Brake / Reverse
 	var show_reverse_lights = false
@@ -119,13 +119,15 @@ func _fixed_process(delta):
 		set_brake(1.0)
 		set_engine_force(0)
 		# Increase steering speed
-		# STEER_SPEED *= 1.5
+		# steer_speed_multiplier += 1.5
+		
+	var final_steer_speed = STEER_SPEED*steer_speed_multiplier*delta
 
 	if (steer_target < steer_angle):
-		steer_angle -= STEER_SPEED*delta
+		steer_angle -= final_steer_speed
 		steer_angle = max(steer_target, steer_angle)
 	elif (steer_target > steer_angle):
-		steer_angle += STEER_SPEED*delta
+		steer_angle += final_steer_speed
 		steer_angle = min(steer_target, steer_angle)
 	
 	# The further we have to turn wheels, the faster we want it
@@ -136,7 +138,12 @@ func _fixed_process(delta):
 	# Update steer angle
 	get_node("steerangle").angle = steer_angle
 	
-	draw_debug_text()
+	draw_debug_text(str(
+		"STEER_SPEED: ", STEER_SPEED, "\n",
+		"steer_speed_multiplier: ", steer_speed_multiplier, "\n",
+		"final_steer_speed: ", final_steer_speed, "\n",
+		"steer_angle: ", steer_angle, "\n"
+	))
 
 func set_brake_lights(on):
 	if (on):
