@@ -177,11 +177,7 @@ func _fixed_process(delta):
 
 	# Update steer angle
 	get_node("steerangle").angle = steer_angle
-	
-	draw_debug_text(str(
-		"final_steer_speed: ", final_steer_speed, "\n",
-		"final_engine_force: ", final_engine_force, "\n"
-	))
+
 
 func set_brake_lights(on):
 	if (on):
@@ -223,59 +219,3 @@ func reset_car():
 	set_translation(initial_pos)
 	var reset_rot = Vector3(0, 0, 0)
 	set_rotation_deg(reset_rot)
-
-func draw_debug_text(given_text):
-	var camera = get_node("cambase/Camera")
-	var debug_text_position = get_node("TextPosition")
-	# var panel = get_node("TextPosition/Panel")
-	var debug_text = debug_text_position.find_node("text")
-	var fl_wheel = get_node("Wheel FL")
-	var fr_wheel = get_node("Wheel FR")
-	var rl_wheel = get_node("Wheel RL")
-	var rr_wheel = get_node("Wheel RR")
-	var fl_text = fl_wheel.find_node("text")
-	var fr_text = fr_wheel.find_node("text")
-	var rl_text = rl_wheel.find_node("text")
-	var rr_text = rr_wheel.find_node("text")
-
-	# Set debug text
-	if (given_text):
-		debug_text.set_text(given_text)
-	else:
-		debug_text.set_text(str("Brake: ", get_brake(), "\n",
-							#"Friction: ", get_friction(), "\n",
-							#"Mass: ", get_mass(), "\n",
-							"Force: ", get_engine_force(), "\n",
-							"Acceleration: ", get_mass() / get_engine_force(), "\n",
-							"Velocity: ", "%6.2f" % get_linear_velocity().x, ",", "%6.2f" % get_linear_velocity().y, ",", "%6.2f" % get_linear_velocity().z, "\n"
-							# "Steering: ", "%5.2f" % get_steering(), "\n",
-							# "Speed: ", "%5.2f" % speed_kph, "km/h", "\n"
-						))
-	# debug_text.set_text(car_name)
-	# Calculate debug text position
-	var screen_pos = camera.unproject_position(debug_text_position.get_global_transform().origin)
-	var debug_text_offset = Vector2(debug_text.get_size().width/2, debug_text.get_size().height)
-	debug_text.set_pos(screen_pos - debug_text_offset)
-
-	# Set wheel texts
-	fl_text.set_text(str(fl_wheel.is_in_contact()))
-	fr_text.set_text(str(fr_wheel.is_in_contact()))
-	rl_text.set_text(str(rl_wheel.is_in_contact()))
-	rr_text.set_text(str(rr_wheel.is_in_contact()))
-
-	# Calculate wheel positions
-	var fl_screen_pos = camera.unproject_position(fl_wheel.get_global_transform().origin)
-	var fl_offset = Vector2(fl_text.get_size().width/2, fl_text.get_size().height/2)
-	fl_text.set_pos(fl_screen_pos - fl_offset)
-
-	var fr_screen_pos = camera.unproject_position(fr_wheel.get_global_transform().origin)
-	var fr_offset = Vector2(fr_text.get_size().width/2, fr_text.get_size().height/2)
-	fr_text.set_pos(fr_screen_pos - fr_offset)
-
-	var rl_screen_pos = camera.unproject_position(rl_wheel.get_global_transform().origin)
-	var rl_offset = Vector2(rl_text.get_size().width/2, rl_text.get_size().height/2)
-	rl_text.set_pos(rl_screen_pos - rl_offset)
-
-	var rr_screen_pos = camera.unproject_position(rr_wheel.get_global_transform().origin)
-	var rr_offset = Vector2(rr_text.get_size().width/2, rr_text.get_size().height/2)
-	rr_text.set_pos(rr_screen_pos - rr_offset)
