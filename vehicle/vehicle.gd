@@ -2,12 +2,11 @@ extends VehicleBody
 
 # Constants
 const WEIGHT = 1450
-const FRICTION = 0.5
-const ENGINE_FORCE = 6000
-const REVERSE_ENGINE_FORCE = 4000
+const FRICTION = 1.0
+const ENGINE_FORCE = 3000
 
 const STEER_SPEED = 1
-const STEER_LIMIT = 0.8
+const STEER_LIMIT = 1
 const MAX_SPEED = 240 # kph
 
 # Car
@@ -34,6 +33,10 @@ var head_light_r = null
 var headlight_light_on = true
 var headlight_spotlight_on = false
 
+# wheels
+
+var wheel_rl
+var wheel_rr
 
 func _ready():
 	set_fixed_process(true)
@@ -46,7 +49,9 @@ func _ready():
 	head_light_l = get_node("Headlight L")
 	head_light_r = get_node("Headlight R")
 	set_head_lights(headlight_light_on, headlight_spotlight_on)
-	initial_pos = get_global_transform().origin
+	wheel_rl = get_node("Wheel RL")
+	wheel_rr = get_node("Wheel RR")
+	initial_pos = get_global_transform().origin # used for car resetting
 	
 func _input(event):
 	if event.type == InputEvent.KEY:
@@ -63,32 +68,61 @@ func _fixed_process(delta):
 	speed_kph = speed * 3.6
 	speed_mph = speed * 2.237
 	
-	var steer_speed_multiplier = 1
-
+	# var steer_speed_multiplier = 1
 
 	# Update speedometer
 	get_node("Speedometer").speed = speed_kph
-
+		
+	# Faster acceleration from 0
+	var final_engine_force = ENGINE_FORCE
+	var final_steer_speed = STEER_SPEED
+	if (speed_kph > 180):
+		final_engine_force = ENGINE_FORCE*0.25
+		final_steer_speed = STEER_SPEED*0.1
+	elif (speed_kph > 160):
+		final_engine_force = ENGINE_FORCE*0.5
+		final_steer_speed = STEER_SPEED*0.25
+	elif (speed_kph > 120):
+		final_engine_force = ENGINE_FORCE*0.75
+		final_steer_speed = STEER_SPEED*0.5
+	elif (speed_kph > 60):
+		final_engine_force = ENGINE_FORCE
+		final_steer_speed = STEER_SPEED*0.75
+	elif (speed_kph > 30):
+		final_engine_force = ENGINE_FORCE*1.25
+		final_steer_speed = STEER_SPEED
+	elif (speed_kph > 20):
+		final_engine_force = ENGINE_FORCE*1.5
+		final_steer_speed = STEER_SPEED*1.1
+	elif (speed_kph > 10):
+		final_engine_force = ENGINE_FORCE*1.75
+		final_steer_speed = STEER_SPEED*1.25
+	else:
+		final_engine_force = ENGINE_FORCE*1.95
+		final_steer_speed = STEER_SPEED*1.5
+		
 	# Steer
 	if (Input.is_action_pressed("ui_left")):
 		steer_target = -STEER_LIMIT
 		if (get_steering() > 0.2):
-			print("left but right")
-			steer_speed_multiplier += 4
+			pass
+			# print("left but right")
+			# steer_speed_multiplier += 4
 	elif (Input.is_action_pressed("ui_right")):
 		steer_target = STEER_LIMIT
 		if (get_steering() < -0.2):
-			print("right but left")
-			steer_speed_multiplier += 4
+			pass
+			# print("right but left")
+			# steer_speed_multiplier += 4
 	else:
 		steer_target = 0
 		# faster turning when resetting to straight
-		steer_speed_multiplier += 2
-
+		final_steer_speed += 1
+		
 	# Accelerate
 	if (Input.is_action_pressed("ui_up")):
 		if (speed_kph < MAX_SPEED):
-			set_engine_force(ENGINE_FORCE)
+			set_engine_force(final_engine_force)
 		else:
 			set_engine_force(0)
 	else:
@@ -99,14 +133,14 @@ func _fixed_process(delta):
 	# Brake / Reverse
 	var show_reverse_lights = false
 	if (Input.is_action_pressed("ui_down")):
-		if (speed_kph > 10):
+		if (speed_kph > 20):
 			set_brake(1.0)
-			set_engine_force(-ENGINE_FORCE)
+			set_engine_force(-ENGINE_FORCE*2) # braking force
 			set_brake_lights(true)
 		else:
 			# Reverse
 			set_brake(0.0)
-			set_engine_force(-REVERSE_ENGINE_FORCE)
+			set_engine_force(-ENGINE_FORCE)
 		show_reverse_lights = get_engine_force() < 0 # get_linear_velocity().dot(get_global_transform().xform(Vector3(0, 1.5, 2))-get_global_transform().origin) > 0
 	else:
 		set_brake_lights(false)
@@ -121,7 +155,13 @@ func _fixed_process(delta):
 		# Increase steering speed
 		# steer_speed_multiplier += 1.5
 		
-	var final_steer_speed = STEER_SPEED*steer_speed_multiplier*delta
+	# var steer_speed_multiplier = 0.5 + pow(abs(steer_target - steer_angle), 2) # (1 + pow(abs(steer_angle), 2) * 3)
+	final_steer_speed = final_steer_speed*delta
+	
+	# var friction_slip = STEER_LIMIT - pow(abs(steer_angle), 2)
+
+	# wheel_rl.set_friction_slip(friction_slip)
+	# wheel_rr.set_friction_slip(friction_slip)
 
 	if (steer_target < steer_angle):
 		steer_angle -= final_steer_speed
@@ -139,10 +179,8 @@ func _fixed_process(delta):
 	get_node("steerangle").angle = steer_angle
 	
 	draw_debug_text(str(
-		"STEER_SPEED: ", STEER_SPEED, "\n",
-		"steer_speed_multiplier: ", steer_speed_multiplier, "\n",
 		"final_steer_speed: ", final_steer_speed, "\n",
-		"steer_angle: ", steer_angle, "\n"
+		"final_engine_force: ", final_engine_force, "\n"
 	))
 
 func set_brake_lights(on):
@@ -224,38 +262,6 @@ func draw_debug_text(given_text):
 	fr_text.set_text(str(fr_wheel.is_in_contact()))
 	rl_text.set_text(str(rl_wheel.is_in_contact()))
 	rr_text.set_text(str(rr_wheel.is_in_contact()))
-	#fl_text.set_text(str("C: ", fl_wheel.get_damping_compression(), "\n",
-						# "DR: ", fl_wheel.get_damping_relaxation(), "\n",
-						# "FS: ", fl_wheel.get_friction_slip(), "\n",
-						# "RI: ", fl_wheel.get_roll_influence(), "\n",
-						# "SS: ", fl_wheel.get_suspension_stiffness(), "\n",
-						# "ST: ", fl_wheel.get_suspension_travel(), "\n",
-	#					"iC: ", fl_wheel.is_in_contact(), "\n"
-	#				))
-	#fr_text.set_text(str("C: ", fr_wheel.get_damping_compression(), "\n",
-						# "DR: ", fr_wheel.get_damping_relaxation(), "\n",
-						# "FS: ", fr_wheel.get_friction_slip(), "\n",
-						# "RI: ", fr_wheel.get_roll_influence(), "\n",
-						# "SS: ", fr_wheel.get_suspension_stiffness(), "\n",
-						# "ST: ", fr_wheel.get_suspension_travel(), "\n",
-	#					"iC: ", fr_wheel.is_in_contact(), "\n"
-	#				))
-	#bl_text.set_text(str("C: ", bl_wheel.get_damping_compression(), "\n",
-						# "DR: ", bl_wheel.get_damping_relaxation(), "\n",
-						# "FS: ", bl_wheel.get_friction_slip(), "\n",
-						# "RI: ", bl_wheel.get_roll_influence(), "\n",
-						# "SS: ", bl_wheel.get_suspension_stiffness(), "\n",
-						# "ST: ", bl_wheel.get_suspension_travel(), "\n",
-	#					"iC: ", bl_wheel.is_in_contact(), "\n"
-	#				))
-	#br_text.set_text(str("C: ", br_wheel.get_damping_compression(), "\n",
-						# "DR: ", br_wheel.get_damping_relaxation(), "\n",
-						# "FS: ", br_wheel.get_friction_slip(), "\n",
-						# "RI: ", br_wheel.get_roll_influence(), "\n",
-						# "SS: ", br_wheel.get_suspension_stiffness(), "\n",
-						# "ST: ", br_wheel.get_suspension_travel(), "\n",
-	#					"iC: ", br_wheel.is_in_contact(), "\n"
-	#				))
 
 	# Calculate wheel positions
 	var fl_screen_pos = camera.unproject_position(fl_wheel.get_global_transform().origin)

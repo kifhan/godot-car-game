@@ -8,13 +8,13 @@ var camera_mode
 
 # Camera following params
 var collision_exception = []
-var min_distance = 0.5
-var max_distance = 7.0
+var min_distance = 2.0
+var max_distance = 8.0
 var angle_v_adjust = 0.0
-var autoturn_ray_aperture = 25
-var autoturn_speed = 50
-var max_height = 2.5
-var min_height = 0
+var autoturn_ray_aperture = 30
+var autoturn_speed = 60
+var max_height = 3.0
+var min_height = 1.0
 
 # Camera topdown params
 var topdown_distance = 70
